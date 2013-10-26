@@ -2,7 +2,7 @@ module Permutation (
   Seq(Seq), Trans(Trans),
   getSeq, getTrans,
   size, dim, factors,
-  pie, piem, normalize, prod, apply
+  pie, piem, normalize, prod, apply, foldseql, foldseqr
 ) where
 
 -- 順列
@@ -24,7 +24,7 @@ class Permutation a where
   size :: a -> Int
   --次元
   dim :: a -> Int
-  --互換の積に分解
+  --互換の積に分解。小さいやつが先にくる
   factors :: a -> [Trans]
 
 instance Permutation Seq where
@@ -61,9 +61,9 @@ instance Permutation Trans where
   dim = size
   factors = return
 
--- 恒等順列
+-- 恒等順列(d:次元)
 pie :: Int -> Seq
-pie num = Seq $ take num [0..]
+pie d = Seq $ take (1+d) [0..]
 
 -- 十分な長さの高等順列
 piem :: (Permutation a)=> a -> Seq
@@ -91,3 +91,13 @@ p@(Seq xs) `apply` (Trans (x,y))
               | x==i = (xs!!y):chk vs p (i+1)
               | i<y  = v:chk vs p (i+1)
               | i==y = (xs!!x):vs
+
+-- 互換の列の最大次元
+dimmax :: [Trans] -> Int
+dimmax = foldr max' 0
+  where max' (Trans (x,y)) m = max m $ max x y
+-- 互換の列から順列を得る（左から順に適用と右から順に適用がある）
+foldseql :: [Trans] -> Seq
+foldseql ts= foldl apply (pie . dimmax $ ts) ts
+foldseqr :: [Trans] -> Seq
+foldseqr ts= foldr (flip apply) (pie . dimmax $ ts) ts
