@@ -1,8 +1,14 @@
-type Var = Int
+module Permutation (
+  Seq(Seq), Trans(Trans),
+  getSeq, getTrans,
+  size, dim, factors,
+  pie, piem, normalize, prod, apply
+) where
+
 -- 順列
-newtype Seq = Seq { getSeq :: [Var] } deriving(Show,Eq)
+newtype Seq = Seq { getSeq :: [Int] } deriving(Show,Eq)
 -- 互換
-newtype Trans = Trans { getTrans :: (Var,Var) } deriving(Show)
+newtype Trans = Trans { getTrans :: (Int,Int) } deriving(Show)
 instance Eq Trans where
   Trans a@(x1,y1) == Trans b@(x2,y2) = a==b || x1==y2 && x2==y1
 
@@ -25,7 +31,7 @@ instance Permutation Seq where
   size = length  . getSeq
   dim (Seq s) = dim' s 0
         where
-          dim' :: [Var] -> Int -> Int
+          dim' :: [Int] -> Int -> Int
           dim' [] _ = 0
           dim' (x:xs) i
             | x==i      = dim' xs (i+1)
@@ -33,7 +39,7 @@ instance Permutation Seq where
 
   factors p@(Seq xs)=snd $ factors' (xs,[])
                   where
-                    factors' :: ([Var],[Trans]) -> ([Var],[Trans])
+                    factors' :: ([Int],[Trans]) -> ([Int],[Trans])
                     factors' (vs,rs)
                       | vs==[] =(vs,rs)
                       |otherwise = let lastpos=length vs - 1
@@ -42,7 +48,7 @@ instance Permutation Seq where
                                                               False ->factors' (set maxpos l (init vs),(Trans (lastpos,maxpos)):rs)
                         where
                           -- 最大値のある場所と一番最後のやつを返す
-                          look :: Int -> [Var] -> Int -> (Int,Var)
+                          look :: Int -> [Int] -> Int -> (Int,Int)
                           look i (x:xs) maxpos=case x==i of True  -> (maxpos,if xs==[] then maxpos else last xs)
                                                             False -> look i xs (maxpos+1)   --次を探す
                           -- 配列のi番目をvに変える
@@ -79,16 +85,9 @@ p@(Seq xs) `apply` (Trans (x,y))
   | x>=y = p `apply` Trans (y,x)
   | x<y  = Seq $ chk xs (x,y) 0
     where
-      chk :: [Var] -> (Var,Var) -> Int -> [Var]
+      chk :: [Int] -> (Int,Int) -> Int -> [Int]
       chk (v:vs) p@(x,y) i
               | i<x  = v:chk vs p (i+1)
               | x==i = (xs!!y):chk vs p (i+1)
               | i<y  = v:chk vs p (i+1)
               | i==y = (xs!!x):vs
-
-main =do
-       let e = pie 4
-       print e
-       print $ e `prod` Trans (0,2) `prod` Trans (2,1)
-       print $ dim $ Seq [1,2,0,4,3]
-       print $ factors $ Seq [1,2,0,4,3]
