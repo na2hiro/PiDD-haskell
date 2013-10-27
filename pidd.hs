@@ -66,20 +66,47 @@ topT :: Node -> Trans
 topT = var2trans . top
 -- 順列の最大次元を返す
 
--- Seq集合にTransを適用する
-papply :: Node -> Trans -> Node
 -- 2つのPiDDの和集合
 union :: Node -> Node -> Node
-union Empty p1 = p1
+union Empty q = q
 union Base Empty = Base
 union Base Base  = Base
-union Base (Node v p0 p1) = Node v (union Base p0) p1
-union p0 Empty = p0
-union (Node v p0 p1) Base  =Node v (union Base p0) p1
-union p@(Node v1 p0 p1) q@(Node v2 q0 q1) =
-    case v1 `compare` v2 of LT -> Node v2 (q0 `union` p) q1
-                            GT -> Node v1 (p0 `union` q) p1
-                            EQ -> Node v1 (p0 `union` q0) (p1 `union` q1)
+union Base (Node v p0 p1) = Node v (Base `union` p0) p1
+union p Empty = p
+union (Node v p0 p1) Base  =Node v (Base `union` p0) p1
+union p@(Node v1 p0 p1) q@(Node v2 q0 q1)
+  | v1<v2 = Node v2 (q0 `union` p) q1
+  | v1>v2 = Node v1 (p0 `union` q) p1
+  |otherwise= Node v1 (p0 `union` q0) (p1 `union` q1)
+
+-- 2つのPiDDの積集合
+intsec :: Node -> Node -> Node
+intsec Empty _ = Empty
+intsec Base Empty = Empty
+intsec Base Base  = Base
+intsec Base (Node v p0 p1) = intsec Base p0
+intsec _ Empty = Empty
+intsec (Node v p0 p1) Base = intsec Base p0
+intsec p@(Node v1 p0 p1) q@(Node v2 q0 q1)
+  | v1<v2 = p `intsec` q0
+  | v1>v2 = p0 `intsec` q
+  | v1==v2= Node v1 (p0 `intsec` q0) (p1 `intsec` q1)
+
+-- 2つのPiDDの差集合
+diff :: Node -> Node -> Node
+diff Empty _ = Empty
+diff p Empty = p
+diff Base Base = Empty
+diff Base (Node v p0 p1) = diff Base p0
+diff (Node v p0 p1) Base = Node v (diff p0 Base) p1
+diff p@(Node v1 p0 p1) q@(Node v2 q0 q1)
+  | v1<v2 = diff p q0
+  | v1>v2 = Node v1 (diff p0 q) p1
+  | v1==v2= Node v1 (diff p0 q0) (diff p1 q1)
+
+
+-- Seq集合にTransを適用する
+papply :: Node -> Trans -> Node
 papply n t = papply' n $ normalize t
   where
     papply' :: Node -> Trans -> Node
@@ -127,6 +154,7 @@ main = do
     print $ calc p
     print . calc $ nodeT (Trans (2,0)) (nodeT (Trans (1,0)) Empty Base) Base
     -}
+{-
 main = do
     let p = fromseq $ Seq [0,2,1]
     let q = fromseq $ Seq [2,1,0]
@@ -135,5 +163,16 @@ main = do
     let r = p `union` q
     printT r
     print .calc $ r
+-}
+main = do
+    let p = fromseq $ Seq [0,2,1]
+        q = fromseq $ Seq [2,1,0]
+        r = p `union` q
+    printT r
+    let s = r `intsec` p
+    printT s
+    print .calc $ s
+    print .calc $ r `diff` p
+
 
 
