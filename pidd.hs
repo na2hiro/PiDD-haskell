@@ -1,4 +1,3 @@
-import Data.List
 import Permutation
 -- PiDDの節
 type Var = Int
@@ -69,6 +68,18 @@ topT = var2trans . top
 
 -- Seq集合にTransを適用する
 papply :: Node -> Trans -> Node
+-- 2つのPiDDの和集合
+union :: Node -> Node -> Node
+union Empty p1 = p1
+union Base Empty = Base
+union Base Base  = Base
+union Base (Node v p0 p1) = Node v (union Base p0) p1
+union p0 Empty = p0
+union (Node v p0 p1) Base  =Node v (union Base p0) p1
+union p@(Node v1 p0 p1) q@(Node v2 q0 q1) =
+    case v1 `compare` v2 of LT -> Node v2 (q0 `union` p) q1
+                            GT -> Node v1 (p0 `union` q) p1
+                            EQ -> Node v1 (p0 `union` q0) (p1 `union` q1)
 papply n t = papply' n $ normalize t
   where
     papply' :: Node -> Trans -> Node
@@ -106,6 +117,7 @@ main = do
   sequence_ $ map (print . trans2var) trs
 -}
 --main = print $ showWithTrans $ fromseq $ Seq [1,0,2]
+{-
 main = do
     printT $ papply (fromseq $ Seq [1,0,2]) $ Trans (2,0)
     printT $ papply (fromseq $ Seq [1,0,2]) $ Trans (1,0)
@@ -113,5 +125,15 @@ main = do
     let p= papply (fromseq $ Seq [1,0,2]) $ Trans (2,0)
     printT p
     print $ calc p
+    print . calc $ nodeT (Trans (2,0)) (nodeT (Trans (1,0)) Empty Base) Base
+    -}
+main = do
+    let p = fromseq $ Seq [0,2,1]
+    let q = fromseq $ Seq [2,1,0]
+    printT p
+    printT q
+    let r = p `union` q
+    printT r
+    print .calc $ r
 
 

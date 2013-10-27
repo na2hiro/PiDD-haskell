@@ -14,9 +14,9 @@ instance Eq Trans where
 
 instance Ord Trans where
   Trans (x1,y1) `compare` Trans (x2,y2)
-    | x1 < y1 = LT
-    | x1 > y1 = GT
-    | x1==y1  = y2 `compare` y1 --ここが逆なので注意
+    | x1 < x2 = LT
+    | x1 > x2 = GT
+    | x1==x2  = y2 `compare` y1 --ここが逆なので注意
 
 -- 置換
 class Permutation a where
