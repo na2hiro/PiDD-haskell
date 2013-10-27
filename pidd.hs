@@ -1,5 +1,4 @@
 import Permutation
-import Debug.Trace
 -- PiDDの節
 type Var = Int
 
@@ -107,6 +106,14 @@ diff p@(Node v1 p0 p1) q@(Node v2 q0 q1)
   | v1>v2 = Node v1 (diff p0 q) p1
   | v1==v2= Node v1 (diff p0 q0) (diff p1 q1)
 
+-- 直積
+dprod :: Node -> Node -> Node
+dprod _ Empty = Empty
+dprod p Base  = p
+dprod Empty _ = Empty
+dprod Base q  = q
+dprod p (Node v q0 q1) = (p `dprod` q0) `union` ((p `dprod` q1) `papply` (var2trans v))
+
 -- cofact
 cofact :: Node -> (Int,Int) -> Node
 cofact Empty _ = Empty
@@ -197,6 +204,7 @@ main = do
     print .calc $ s
     print .calc $ r `diff` p
 -}
+{-
 main = do
     let p = fromseqs $ [Seq [2,1,0],Seq [1,2,0],Seq [0,2,1],Seq [1,0]]
     printT p
@@ -204,6 +212,13 @@ main = do
     let q = cofact p (2,0)
     printT q
     print .calc $ q
+-}
+main = do
+    let p = fromseqs $ [Seq [0,1,2],Seq [1,0,2]]
+        q = fromseqs $ [Seq [0,2,1],Seq [1,2,0]]
+        r = dprod p q
+    printT r
+    print.calc$r
 
 
 
