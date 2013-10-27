@@ -1,4 +1,5 @@
 import Permutation
+import Debug.Trace
 -- PiDDの節
 type Var = Int
 
@@ -34,7 +35,9 @@ nodeT = Node . trans2var
 
 -- PiDD作成
 fromseq :: Seq -> Node
-fromseq = foldl papply Base . factors
+fromseq = foldr (flip papply) Base . factors
+fromseqs :: [Seq] -> Node
+fromseqs = foldr (union . fromseq) Empty
 
 -- PiDDであらわされる順列の最大
 dimN :: Node -> Int
@@ -47,7 +50,7 @@ calc :: Node -> [Seq]
 calc n
   | n == Empty = []
   | n == Base  = [pie . dimN $ n]
-  | otherwise  = map foldseqr $ calc' n
+  | otherwise  = map foldseql $ calc' n
   where
     calc' :: Node -> [[Trans]]
     calc' Empty = []
@@ -104,10 +107,33 @@ diff p@(Node v1 p0 p1) q@(Node v2 q0 q1)
   | v1>v2 = Node v1 (diff p0 q) p1
   | v1==v2= Node v1 (diff p0 q0) (diff p1 q1)
 
+-- cofact
+cofact :: Node -> (Int,Int) -> Node
+cofact Empty _ = Empty
+cofact Base (x,y)
+  | x==y = Base
+  |otherwise = Empty
+cofact n@(Node v p0 p1) pa@(x,y) =
+  let tr = normalize . Trans $ pa
+      cv = trans2var tr
+  in if v==cv then p1
+     else 
+      if x==y then cofact' n x
+      else cofact' (n `papply` tr) y
+  where
+    -- cofact(v,v)
+    cofact' :: Node -> Int -> Node
+    cofact' Empty _ = Empty
+    cofact' Base  _ = Base
+    cofact' (Node v p0 p1) u =
+      let Trans (x,y) = var2trans v
+      in if x==u || y==u then cofact' p0 u
+         else Node v (cofact' p0 u) (cofact' p1 u)
+
 
 -- Seq集合にTransを適用する
 papply :: Node -> Trans -> Node
-papply n t = papply' n $ normalize t
+papply n = papply' n . normalize
   where
     papply' :: Node -> Trans -> Node
     papply' n t
@@ -125,15 +151,11 @@ papply n t = papply' n $ normalize t
                            else if y==v then (u,u)
                            else if x==u then (y,y)
                            else (u,y)
-             in if u'==x && v==y' then
+             in if u==x && v==y then
                   -- 逆置換だった...いれかえる
-                  Node v p1 p0
+                  Node tv p1 p0
                 else
                   nodeT (Trans (x,y')) (papply' p0 t) (papply' p1 $ Trans (u',v))
-
-
-
-      
 
 printT :: Node -> IO ()
 printT = print . showWithTrans
@@ -164,6 +186,7 @@ main = do
     printT r
     print .calc $ r
 -}
+{-
 main = do
     let p = fromseq $ Seq [0,2,1]
         q = fromseq $ Seq [2,1,0]
@@ -173,6 +196,14 @@ main = do
     printT s
     print .calc $ s
     print .calc $ r `diff` p
+-}
+main = do
+    let p = fromseqs $ [Seq [2,1,0],Seq [1,2,0],Seq [0,2,1],Seq [1,0]]
+    printT p
+    print .calc $ p
+    let q = cofact p (2,0)
+    printT q
+    print .calc $ q
 
 
 
