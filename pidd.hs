@@ -1,3 +1,4 @@
+module PiDD where
 import Permutation
 -- PiDDの節
 type Var = Int
@@ -213,12 +214,27 @@ main = do
     printT q
     print .calc $ q
 -}
+{-
 main = do
     let p = fromseqs $ [Seq [0,1,2],Seq [1,0,2]]
         q = fromseqs $ [Seq [0,2,1],Seq [1,2,0]]
         r = dprod p q
     printT r
     print.calc$r
+-}
+{-
+printS :: Node -> IO ()
+printS = print . calc
+main = do
+    let a = Base
+        b = a `papply` Trans (1,0)
+        c = a `papply` Trans (2,1)
+        d = a `union` b
+        e = c `union` d
+        f = e `dprod` d
+        g = f `diff` e
+    sequence_ $ map printS [a,b,c,d,e,f,g]
 
+-}
 
 
