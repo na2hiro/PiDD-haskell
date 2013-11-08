@@ -1,22 +1,26 @@
 module Permutation (
-  Seq(Seq), Trans(Trans),
+  Seq(Seq),Trans(Trans),
+  trans,
   getSeq, getTrans,
   size, dim, factors,
-  pie, piem, normalize, prod, apply, foldseql, foldseqr
+  pie, piem, prod, apply, foldseql, foldseqr
 ) where
 
 -- 順列
 newtype Seq = Seq { getSeq :: [Int] } deriving(Show,Eq)
 -- 互換
-newtype Trans = Trans { getTrans :: (Int,Int) } deriving(Show)
-instance Eq Trans where
-  Trans a@(x1,y1) == Trans b@(x2,y2) = a==b || x1==y2 && x2==y1
+newtype Trans = Trans { getTrans :: (Int,Int) } deriving(Show,Eq)
 
 instance Ord Trans where
   Trans (x1,y1) `compare` Trans (x2,y2)
     | x1 < x2 = LT
     | x1 > x2 = GT
     | x1==x2  = y2 `compare` y1 --ここが逆なので注意
+
+trans :: (Int,Int) -> Trans
+trans (x,y)
+  | x<y = Trans (y,x)
+  |otherwise = Trans(x,y)
 
 -- 置換
 class Permutation a where
@@ -69,11 +73,6 @@ pie d = Seq $ take (1+d) [0..]
 piem :: (Permutation a)=> a -> Seq
 piem t = pie $ size t
 
--- 互換の正規化（大きい方を前に）
-normalize :: Trans -> Trans
-normalize t@(Trans (x,y))
-  | x<y = Trans (y,x)
-  |otherwise = t
 
 -- 積
 prod :: (Permutation a)=> Seq -> a -> Seq
@@ -81,9 +80,7 @@ prod p q = foldl apply p $ factors q
 
 -- 互換を1つ適用
 apply :: Seq -> Trans -> Seq
-p@(Seq xs) `apply` (Trans (x,y))
-  | x>=y = p `apply` Trans (y,x)
-  | x<y  = Seq $ chk xs (x,y) 0
+p@(Seq xs) `apply` (Trans (x,y)) = Seq $ chk xs (y,x) 0
     where
       chk :: [Int] -> (Int,Int) -> Int -> [Int]
       chk (v:vs) p@(x,y) i
