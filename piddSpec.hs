@@ -44,3 +44,11 @@ spec = do
       let p = node v64 p65 p54
 
       it "a=Base" $ prodab `shouldBe` p
+    describe "allseqs" $ do
+      let s0 = allseqs 0
+      let s1 = allseqs 1
+      let s4 = allseqs 4
+      it "0" $ s0 `shouldBe` Base
+      let v10 = trans2var$ trans (1,0)
+      it "1" $ s1 `shouldBe` node v10 Base Base
+      it "4" $ count s4 `shouldBe` 120

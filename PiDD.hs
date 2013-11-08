@@ -1,8 +1,8 @@
 module PiDD (
   Node(Empty,Base),node,
   var2trans,trans2var,showWithTrans,nodeT,
-  fromseq,fromseqs,dimN,calc,
-  top,union,intsec,diff,dprod,cofact,papply
+  fromseq,fromseqs,allseqs,dimN,calc,
+  top,union,intsec,diff,dprod,cofact,papply,count
 )where
 import Permutation
 -- PiDDの節
@@ -42,6 +42,18 @@ fromseq :: Seq -> Node
 fromseq = foldr (flip papply) Base . factors
 fromseqs :: [Seq] -> Node
 fromseqs = foldr (union . fromseq) Empty
+-- (0...n)の順列を全て返す
+allseqs :: Int -> Node
+allseqs 0 = Base
+allseqs n = let l = allseqs $ n-1
+            in allseqs' l n 0
+  where
+    allseqs' :: Node -> Int -> Int -> Node
+    allseqs' l x y
+      | y==(x-1) = nodeT (Trans (x,y)) l l
+      |otherwise = nodeT (Trans (x,y)) l $ allseqs' l x $ y+1
+
+
 
 -- PiDDであらわされる順列の最大
 dimN :: Node -> Int
@@ -142,6 +154,12 @@ cofact n@(Node v p0 p1) pa@(x,y) =
       in if x==u || y==u then cofact' p0 u
          else node v (cofact' p0 u) (cofact' p1 u)
 
+-- count
+count :: Node -> Int
+count Empty = 0
+count Base  = 1
+count (Node v p q) = count p + count q
+
 
 -- Seq集合にTransを適用する
 papply :: Node -> Trans -> Node
@@ -165,77 +183,3 @@ papply n t
               node tv p1 p0
             else
               nodeT (Trans (x,y')) (papply p0 t) (papply p1 $ Trans (u',v))
-
-printT :: Node -> IO ()
-printT = print . showWithTrans
-{-
-main = do
-  let trs=map var2trans $ take 20 [0..]
-  sequence_ $ map print trs
-  sequence_ $ map (print . trans2var) trs
--}
---main = print $ showWithTrans $ fromseq $ Seq [1,0,2]
-{-
-main = do
-    printT $ papply (fromseq $ Seq [1,0,2]) $ Trans (2,0)
-    printT $ papply (fromseq $ Seq [1,0,2]) $ Trans (1,0)
-    printT $ (fromseq $ Seq [0,1,2]) `papply` Trans (2,1) `papply` Trans (1,0)
-    let p= papply (fromseq $ Seq [1,0,2]) $ Trans (2,0)
-    printT p
-    print $ calc p
-    print . calc $ nodeT (Trans (2,0)) (nodeT (Trans (1,0)) Empty Base) Base
-    -}
-{-
-main = do
-    let p = fromseq $ Seq [0,2,1]
-    let q = fromseq $ Seq [2,1,0]
-    printT p
-    printT q
-    let r = p `union` q
-    printT r
-    print .calc $ r
--}
-{-
-main = do
-    let p = fromseq $ Seq [0,2,1]
-        q = fromseq $ Seq [2,1,0]
-        r = p `union` q
-    printT r
-    let s = r `intsec` p
-    printT s
-    print .calc $ s
-    print .calc $ r `diff` p
--}
-{-
-main = do
-    let p = fromseqs $ [Seq [2,1,0],Seq [1,2,0],Seq [0,2,1],Seq [1,0]]
-    printT p
-    print .calc $ p
-    let q = cofact p (2,0)
-    printT q
-    print .calc $ q
--}
-{-
-main = do
-    let p = fromseqs $ [Seq [0,1,2],Seq [1,0,2]]
-        q = fromseqs $ [Seq [0,2,1],Seq [1,2,0]]
-        r = dprod p q
-    printT r
-    print.calc$r
--}
-{-
-printS :: Node -> IO ()
-printS = print . calc
-main = do
-    let a = Base
-        b = a `papply` Trans (1,0)
-        c = a `papply` Trans (2,1)
-        d = a `union` b
-        e = c `union` d
-        f = e `dprod` d
-        g = f `diff` e
-    sequence_ $ map printS [a,b,c,d,e,f,g]
-
--}
-
-
