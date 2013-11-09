@@ -3,9 +3,9 @@ module PiDD (
   fromseq,fromseqs,allseqs,dimN,calc,
   top,union,intsec,diff,dprod,cofact,papply,count
 )where
+import ZDD
 import Permutation
 -- PiDDの節
-type Var = Int
 
 -- 節番号と互換の変換0:(1,0); 1:(2,1) 2:(2,0); 3:(3,2) 4:(3,1) 5:(3,0); 6:(4,3)...
 var2trans :: Var -> Trans
@@ -22,7 +22,6 @@ trans2var (Trans (x,y)) = (x-1)*x `div` 2 + (x-1) - y
 
 -- PiDD
 -- 接点ひとつ(0:左,1:右)
-data Node = Empty | Base | Node Var Node Node deriving(Eq)
 node_ :: Var -> Node -> Node -> Node
 node_ v p Empty = p
 node_ v p0 p1 = Node v p0 p1
@@ -31,8 +30,6 @@ showWithTrans :: Node -> String
 showWithTrans (Node v n1 n2) = "(Node " ++ (show . getTrans . var2trans $ v) ++ " " ++ showWithTrans n1 ++ " " ++ showWithTrans n2 ++ ")"
 showWithTrans Empty = "Empty"
 showWithTrans Base = "Base"
-
-instance Show Node where show = showWithTrans
 
 -- Transから直接buildする
 nodeT :: Trans -> Node -> Node -> Node
@@ -92,43 +89,7 @@ topT :: Node -> Trans
 topT = var2trans . top
 -- 順列の最大次元を返す
 
--- 2つのPiDDの和集合
-union :: Node -> Node -> Node
-union Empty q = q
-union Base Empty = Base
-union Base Base  = Base
-union Base (Node v p0 p1) = node_ v (Base `union` p0) p1
-union p Empty = p
-union (Node v p0 p1) Base  =node_ v (Base `union` p0) p1
-union p@(Node v1 p0 p1) q@(Node v2 q0 q1)
-  | v1<v2 = node_ v2 (q0 `union` p) q1
-  | v1>v2 = node_ v1 (p0 `union` q) p1
-  |otherwise= node_ v1 (p0 `union` q0) (p1 `union` q1)
 
--- 2つのPiDDの積集合
-intsec :: Node -> Node -> Node
-intsec Empty _ = Empty
-intsec Base Empty = Empty
-intsec Base Base  = Base
-intsec Base (Node v p0 p1) = intsec Base p0
-intsec _ Empty = Empty
-intsec (Node v p0 p1) Base = intsec Base p0
-intsec p@(Node v1 p0 p1) q@(Node v2 q0 q1)
-  | v1<v2 = p `intsec` q0
-  | v1>v2 = p0 `intsec` q
-  | v1==v2= node_ v1 (p0 `intsec` q0) (p1 `intsec` q1)
-
--- 2つのPiDDの差集合
-diff :: Node -> Node -> Node
-diff Empty _ = Empty
-diff p Empty = p
-diff Base Base = Empty
-diff Base (Node v p0 p1) = diff Base p0
-diff (Node v p0 p1) Base = node_ v (diff p0 Base) p1
-diff p@(Node v1 p0 p1) q@(Node v2 q0 q1)
-  | v1<v2 = diff p q0
-  | v1>v2 = node_ v1 (diff p0 q) p1
-  | v1==v2= node_ v1 (diff p0 q0) (diff p1 q1)
 
 -- 直積
 dprod :: Node -> Node -> Node
@@ -160,12 +121,6 @@ cofact pa@(x,y) n@(Node v p0 p1) =
       let Trans (x,y) = var2trans v
       in if x==u || y==u then cofact' u p0
          else node_ v (cofact' u p0) (cofact' u p1)
-
--- count
-count :: Node -> Int
-count Empty = 0
-count Base  = 1
-count (Node v p q) = count p + count q
 
 papply :: (Int,Int) -> Node -> Node
 papply t@(x,y) n | x==y = n
