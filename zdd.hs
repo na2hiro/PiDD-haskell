@@ -1,9 +1,8 @@
-module ZDD where
-data Node = Node Var Node Node
-          | Empty
-          | Base deriving(Show, Eq)
-
-type Var = Int
+module ZDD(
+  Node(Base, Empty), getNode, subset1, subset0, change,
+  union, intsec, diff, count
+) where
+import Node
 
 getNode :: Var->Node->Node->Node
 getNode top p0 Empty = p0

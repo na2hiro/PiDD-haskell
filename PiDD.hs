@@ -3,6 +3,7 @@ module PiDD (
   fromseq,fromseqs,allseqs,dimN,calc,
   top,union,intsec,diff,dprod,cofact,papply,count
 )where
+import Node
 import ZDD
 import Permutation
 -- PiDDの節
