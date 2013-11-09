@@ -47,3 +47,5 @@ spec = do
       it "4" $ count s4 `shouldBe` 120
     describe "(0,0)" $ do
       it "e.tau(0,0)" $ papply (0,0) Base `shouldBe` Base
+      it "node (0,0) Base Empty" $ node (0,0) Base Empty `shouldBe` Base
+      it "node (0,0) Empty Base" $ node (0,0) Empty Base `shouldBe` Base

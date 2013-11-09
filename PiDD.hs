@@ -39,7 +39,8 @@ nodeT :: Trans -> Node -> Node -> Node
 nodeT = node_ . trans2var
 
 node :: (Int, Int) -> Node -> Node -> Node
-node = nodeT. trans
+node (x,y) | x==y = union
+           | otherwise = nodeT. trans$ (x,y)
 
 
 
