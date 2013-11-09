@@ -1,7 +1,7 @@
 module PiDD (
   Node(Empty,Base),node,
   fromseq,fromseqs,allseqs,dimN,calc,
-  top,union,intsec,diff,dprod,cofact,papply,count
+  getTop,union,intsec,diff,dprod,cofact,papply,count
 )where
 import Node
 import ZDD
@@ -77,14 +77,9 @@ calc n
                            in (calc' p0) ++ (map (tr:) $ calc' p1)
 
 -- PiDD操作
--- root接点を返す
-top :: Node -> Var
-top Empty = undefined
-top Base  = undefined
-top (Node v _ _ _) = v
--- transで返す
-topT :: Node -> Trans
-topT = var2trans . top
+-- root接点をtransで返す
+getTopT :: Node -> Trans
+getTopT = var2trans . getTop
 -- 順列の最大次元を返す
 
 
