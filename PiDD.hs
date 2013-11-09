@@ -1,6 +1,5 @@
 module PiDD (
-  Node(Empty,Base),
-  var2trans,trans2var,showWithTrans,node,
+  Node(Empty,Base),node,
   fromseq,fromseqs,allseqs,dimN,calc,
   top,union,intsec,diff,dprod,cofact,papply,count
 )where
@@ -23,14 +22,17 @@ trans2var (Trans (x,y)) = (x-1)*x `div` 2 + (x-1) - y
 
 -- PiDD
 -- 接点ひとつ(0:左,1:右)
-data Node = Empty | Base | Node Var Node Node deriving(Show,Eq)
+data Node = Empty | Base | Node Var Node Node deriving(Eq)
 node_ :: Var -> Node -> Node -> Node
 node_ v p Empty = p
 node_ v p0 p1 = Node v p0 p1
 
 showWithTrans :: Node -> String
 showWithTrans (Node v n1 n2) = "(Node " ++ (show . getTrans . var2trans $ v) ++ " " ++ showWithTrans n1 ++ " " ++ showWithTrans n2 ++ ")"
-showWithTrans a = show a
+showWithTrans Empty = "Empty"
+showWithTrans Base = "Base"
+
+instance Show Node where show = showWithTrans
 
 -- Transから直接buildする
 nodeT :: Trans -> Node -> Node -> Node
