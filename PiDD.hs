@@ -23,9 +23,6 @@ trans2var (Trans (x,y)) = (x-1)*x `div` 2 + (x-1) - y
 
 -- PiDD
 -- 接点ひとつ(0:左,1:右)
-node_ :: Var -> Node -> Node -> Node
-node_ v p Empty = p
-node_ v p0 p1 = Node v p0 p1
 
 showWithTrans :: Node -> String
 showWithTrans (Node v n1 n2) = "(Node " ++ (show . getTrans . var2trans $ v) ++ " " ++ showWithTrans n1 ++ " " ++ showWithTrans n2 ++ ")"
@@ -34,7 +31,7 @@ showWithTrans Base = "Base"
 
 -- Transから直接buildする
 nodeT :: Trans -> Node -> Node -> Node
-nodeT = node_ . trans2var
+nodeT = getNode . trans2var
 
 node :: (Int, Int) -> Node -> Node -> Node
 node (x,y) | x==y = union
@@ -121,7 +118,7 @@ cofact pa@(x,y) n@(Node v p0 p1) =
     cofact' u (Node v p0 p1) =
       let Trans (x,y) = var2trans v
       in if x==u || y==u then cofact' u p0
-         else node_ v (cofact' u p0) (cofact' u p1)
+         else getNode v (cofact' u p0) (cofact' u p1)
 
 papply :: (Int,Int) -> Node -> Node
 papply t@(x,y) n | x==y = n
@@ -146,6 +143,6 @@ papplyT t n
                        else (u,y)
          in if u==x && v==y then
               -- 逆置換だった...いれかえる
-              node_ tv p1 p0
+              getNode tv p1 p0
             else
               node (x,y') (papplyT t p0) (papply (u',v) p1)
