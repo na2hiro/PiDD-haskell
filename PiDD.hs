@@ -25,7 +25,7 @@ trans2var (Trans (x,y)) = (x-1)*x `div` 2 + (x-1) - y
 -- 接点ひとつ(0:左,1:右)
 
 showWithTrans :: Node -> String
-showWithTrans (Node v n1 n2) = "(Node " ++ (show . getTrans . var2trans $ v) ++ " " ++ showWithTrans n1 ++ " " ++ showWithTrans n2 ++ ")"
+showWithTrans (Node v n1 n2 _) = "(Node " ++ (show . getTrans . var2trans $ v) ++ " " ++ showWithTrans n1 ++ " " ++ showWithTrans n2 ++ ")"
 showWithTrans Empty = "Empty"
 showWithTrans Base = "Base"
 
@@ -61,7 +61,7 @@ allseqs n = let l = allseqs $ n-1
 dimN :: Node -> Int
 dimN Empty = 0
 dimN Base  = 0
-dimN (Node v p0 p1) = max ((dim . var2trans) v) $ max (dimN p0) (dimN p1)
+dimN (Node v p0 p1 _) = max ((dim . var2trans) v) $ max (dimN p0) (dimN p1)
 
 -- PiDDから順列の集合を返す
 calc :: Node -> [Seq]
@@ -73,7 +73,7 @@ calc n
     calc' :: Node -> [[Trans]]
     calc' Empty = []
     calc' Base  = [[]]
-    calc' (Node v p0 p1) = let tr=var2trans v
+    calc' (Node v p0 p1 _) = let tr=var2trans v
                            in (calc' p0) ++ (map (tr:) $ calc' p1)
 
 -- PiDD操作
@@ -81,7 +81,7 @@ calc n
 top :: Node -> Var
 top Empty = undefined
 top Base  = undefined
-top (Node v _ _) = v
+top (Node v _ _ _) = v
 -- transで返す
 topT :: Node -> Trans
 topT = var2trans . top
@@ -95,7 +95,7 @@ dprod _ Empty = Empty
 dprod p Base  = p
 dprod Empty _ = Empty
 dprod Base q  = q
-dprod p (Node v q0 q1) = (p `dprod` q0) `union` ((var2trans v) `papplyT` (p `dprod` q1))
+dprod p (Node v q0 q1 _) = (p `dprod` q0) `union` ((var2trans v) `papplyT` (p `dprod` q1))
 
 -- cofact
 cofact :: (Int,Int) -> Node -> Node
@@ -103,7 +103,7 @@ cofact _ Empty = Empty
 cofact (x,y) Base
   | x==y = Base
   |otherwise = Empty
-cofact pa@(x,y) n@(Node v p0 p1) =
+cofact pa@(x,y) n@(Node v p0 p1 _) =
   let tr = trans pa
       cv = trans2var tr
   in if v==cv then p1
@@ -115,7 +115,7 @@ cofact pa@(x,y) n@(Node v p0 p1) =
     cofact' :: Int -> Node -> Node
     cofact' _ Empty = Empty
     cofact' _ Base  = Base
-    cofact' u (Node v p0 p1) =
+    cofact' u (Node v p0 p1 _) =
       let Trans (x,y) = var2trans v
       in if x==u || y==u then cofact' u p0
          else getNode v (cofact' u p0) (cofact' u p1)
@@ -130,7 +130,7 @@ papplyT t n
   | n == Empty = Empty
   | n == Base  = nodeT t Empty n
   | otherwise  =
-    let Node tv p0 p1 = n
+    let Node tv p0 p1 _ = n
         Trans (x,y) = var2trans tv
         Trans (u,v) = t
     in if u>x then
