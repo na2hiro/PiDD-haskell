@@ -139,27 +139,27 @@ dprod Base q  = q
 dprod p (Node v q0 q1) = (p `dprod` q0) `union` ((var2trans v) `papplyT` (p `dprod` q1))
 
 -- cofact
-cofact :: Node -> (Int,Int) -> Node
-cofact Empty _ = Empty
-cofact Base (x,y)
+cofact :: (Int,Int) -> Node -> Node
+cofact _ Empty = Empty
+cofact (x,y) Base
   | x==y = Base
   |otherwise = Empty
-cofact n@(Node v p0 p1) pa@(x,y) =
+cofact pa@(x,y) n@(Node v p0 p1) =
   let tr = trans pa
       cv = trans2var tr
   in if v==cv then p1
      else 
-      if x==y then cofact' n x
-      else cofact' (tr `papplyT` n) y
+      if x==y then cofact' x n
+      else cofact' y (tr `papplyT` n)
   where
     -- cofact(v,v)
-    cofact' :: Node -> Int -> Node
-    cofact' Empty _ = Empty
-    cofact' Base  _ = Base
-    cofact' (Node v p0 p1) u =
+    cofact' :: Int -> Node -> Node
+    cofact' _ Empty = Empty
+    cofact' _ Base  = Base
+    cofact' u (Node v p0 p1) =
       let Trans (x,y) = var2trans v
-      in if x==u || y==u then cofact' p0 u
-         else node_ v (cofact' p0 u) (cofact' p1 u)
+      in if x==u || y==u then cofact' u p0
+         else node_ v (cofact' u p0) (cofact' u p1)
 
 -- count
 count :: Node -> Int
