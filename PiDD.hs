@@ -53,7 +53,7 @@ allseqs n = let l = allseqs $ n-1
     allseqs' :: Node -> Int -> Int -> Node
     allseqs' l x y
       | y==(x-1) = node (x,y) l l
-      |otherwise = node (x,y) l $ allseqs' l x $ y+1
+      |otherwise = node (x,y) (allseqs' l x $ y+1) l
 
 
 

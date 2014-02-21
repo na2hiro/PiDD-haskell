@@ -40,10 +40,15 @@ spec = do
     describe "allseqs" $ do
       let s0 = allseqs 0
       let s1 = allseqs 1
+      let s2 = allseqs 2
       let s4 = allseqs 4
       it "0" $ s0 `shouldBe` Base
       let v10 = (1,0)
-      it "1" $ s1 `shouldBe` node v10 Base Base
+      let v20 = (2,0)
+      let v21 = (2,1)
+      let n10 = node v10 Base Base
+      it "1" $ s1 `shouldBe` n10
+      it "2" $ s2 `shouldBe` node v20 (node v21 n10 n10) n10
       it "4" $ count s4 `shouldBe` 120
     describe "(0,0)" $ do
       it "e.tau(0,0)" $ papply (0,0) Base `shouldBe` Base
