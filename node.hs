@@ -5,9 +5,9 @@ data Node = Node Var Node Node Count
           | Base deriving(Show, Eq)
 
 type Var = Int
-type Count = Int
+type Count = Integer
 
-count :: Node->Int
+count :: Node->Count
 count Empty = 0
 count Base = 1
 count (Node _ _ _ c) = c
