@@ -49,3 +49,8 @@ spec = do
       it "e.tau(0,0)" $ papply (0,0) Base `shouldBe` Base
       it "node (0,0) Base Empty" $ node (0,0) Base Empty `shouldBe` Base
       it "node (0,0) Empty Base" $ node (0,0) Empty Base `shouldBe` Base
+    describe "cofact(n,n)" $ do
+      let s3 = allseqs 3
+      let s4 = allseqs 4
+      it "allseqs 3.cofact(0,0)" $ count (cofact (0,0) s3) `shouldBe` 6
+      it "allseqs 4.cofact(0,0)" $ count (cofact (0,0) s4) `shouldBe` 24
