@@ -1,6 +1,6 @@
 module ZDD(
   Node(Base, Empty), getNode, subset1, subset0, change,
-  union, intsec, diff, count, getTop
+  union, intsec, diff, count, getTop, toDot
 ) where
 import Node
 

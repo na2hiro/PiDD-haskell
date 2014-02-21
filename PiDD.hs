@@ -1,7 +1,7 @@
 module PiDD (
   Node(Empty,Base),node,
   fromseq,fromseqs,allseqs,dimN,calc,
-  getTop,union,intsec,diff,dprod,cofact,papply,count
+  getTop,union,intsec,diff,dprod,cofact,papply,count,toDot
 )where
 import Node
 import ZDD
